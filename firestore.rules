@@ -1,0 +1,139 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. GLOBAL DEFAULT DENY - Block all reads and writes by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. HELPER FUNCTIONS FOR STRICT OWNER VERIFICATION
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Verify Google-authenticated owner with verified email and verified UID
+    function isVerifiedOwner() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && (
+          request.auth.token.email == "worktail37@gmail.com"
+          || (exists(/databases/$(database)/documents/config/owner)
+              && request.auth.uid == get(/databases/$(database)/documents/config/owner).data.uid)
+        );
+    }
+
+    // 3. SERVER-ONLY OWNER CONFIGURATION
+    // Stores authorized owner UID; readable only by the verified owner; NEVER writable by clients
+    match /config/owner {
+      allow read: if isVerifiedOwner();
+      allow write: if false; // Server-only initialization
+    }
+
+    // 4. PUBLIC CUSTOMER INQUIRIES & CONTACT
+    // Public visitors can ONLY create (submit) an inquiry with strict field validation;
+    // Public CANNOT read, list, update, or delete inquiries (IDs cannot be enumerated);
+    // Only the verified owner can read, update status, or delete inquiries.
+    match /inquiries/{inquiryId} {
+      allow create: if request.resource.data.keys().hasOnly([
+          'id', 'name', 'phone', 'topic', 'message', 'createdAt',
+          'status', 'consentGiven', 'honeypot'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() >= 7
+        && request.resource.data.phone.size() <= 30
+        && request.resource.data.topic is string
+        && request.resource.data.topic.size() <= 100
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 1000
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt is string
+        && (!('honeypot' in request.resource.data) || request.resource.data.honeypot == '');
+
+      allow read, update, delete: if isVerifiedOwner();
+    }
+
+    // 5. PUBLIC TABLE RESERVATIONS
+    // Public visitors can ONLY create (book) a table with strict schema validation;
+    // Public CANNOT read, list, update, or delete reservations;
+    // Only the verified owner can read, update status, or delete table bookings.
+    match /reservations/{reservationId} {
+      allow create: if request.resource.data.keys().hasOnly([
+          'id', 'name', 'phone', 'email', 'date', 'time',
+          'guests', 'seating', 'notes', 'createdAt', 'status',
+          'consentGiven', 'honeypot'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() >= 7
+        && request.resource.data.phone.size() <= 30
+        && request.resource.data.date is string
+        && request.resource.data.date.size() <= 20
+        && request.resource.data.time is string
+        && request.resource.data.time.size() <= 20
+        && request.resource.data.guests is number
+        && request.resource.data.guests >= 1
+        && request.resource.data.guests <= 20
+        && request.resource.data.seating is string
+        && request.resource.data.seating.size() <= 50
+        && (!('notes' in request.resource.data) || (request.resource.data.notes is string && request.resource.data.notes.size() <= 500))
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt is string
+        && (!('honeypot' in request.resource.data) || request.resource.data.honeypot == '');
+
+      allow read, update, delete: if isVerifiedOwner();
+    }
+
+    // 6. WHATSAPP DISPATCH & AUDIT LOGS
+    // Contains operational delivery logs; strictly owner only
+    match /whatsapp_logs/{logId} {
+      allow read, write: if isVerifiedOwner();
+    }
+
+    // 7. STOREFRONT & ADMINISTRATIVE CONFIGURATION
+    // Contains store hours, contact info, AI caps & alert toggles; strictly owner only
+    match /admin_settings/{settingId} {
+      allow read, write: if isVerifiedOwner();
+    }
+
+    // 8. ORDERS (Public customer/guest checkout create with validation; single order tracking; Owner full access)
+    match /orders/{orderId} {
+      allow create: if isVerifiedOwner() || (
+        request.resource.data.keys().hasAll(['id', 'customerName', 'customerPhone', 'items', 'total', 'status'])
+        && request.resource.data.customerName is string
+        && request.resource.data.customerName.size() > 0
+        && request.resource.data.customerName.size() <= 80
+        && request.resource.data.customerPhone is string
+        && request.resource.data.customerPhone.size() <= 30
+        && request.resource.data.items is list
+        && request.resource.data.items.size() <= 50
+        && request.resource.data.total is number
+        && request.resource.data.total >= 0
+        && request.resource.data.status in ['received', 'preparing', 'ready', 'completed', 'cancelled']
+        && !('owner' in request.resource.data)
+        && !('role' in request.resource.data)
+      );
+
+      // Single order lookup (e.g. for guest tracking their order or authenticated customer)
+      allow get: if true;
+      // List all orders is strictly restricted to verified owner or querying user's own orders
+      allow list: if isVerifiedOwner() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isVerifiedOwner();
+    }
+
+    // 9. USER PROFILES (Registered customers / authenticated accounts)
+    match /users/{userId} {
+      allow read, write: if isVerifiedOwner() || (isSignedIn() && request.auth.uid == userId);
+    }
+
+    // 10. SDK CONNECTION PROBE
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

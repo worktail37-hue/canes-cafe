@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  ==============================================================================
+  SITEMAP.XML FOR CANE'S COFFEE (Cafe & Bakery)
+  ==============================================================================
+  TODO-SEO: Replace 'https://www.canescoffee.example' with your real production domain.
+  Update the <lastmod> dates whenever you update menu prices or store hours.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage Landing -->
+  <url>
+    <loc>https://www.canescoffee.example/</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Specialty Coffee Menu Route / Section -->
+  <url>
+    <loc>https://www.canescoffee.example/menu</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Artisan Bakery & Pastries Route / Section -->
+  <url>
+    <loc>https://www.canescoffee.example/bakery</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Cast-Iron Roasting Technique Route / Section -->
+  <url>
+    <loc>https://www.canescoffee.example/roasting</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Our Story & Roasting Craft Route / Section -->
+  <url>
+    <loc>https://www.canescoffee.example/about</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Customer Reviews & Community Route / Section -->
+  <url>
+    <loc>https://www.canescoffee.example/reviews</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Frequently Asked Questions Route / Section -->
+  <url>
+    <loc>https://www.canescoffee.example/faq</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Visit Us / Contact & Location Route / Section -->
+  <url>
+    <loc>https://www.canescoffee.example/contact</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+</urlset>

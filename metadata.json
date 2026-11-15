@@ -1,0 +1,6 @@
+{
+  "name": "Cane's Serve | Specialty Coffee & Fresh Bakery in [CITY]",
+  "description": "Artisanal specialty coffee, fresh bakery, handcrafted pasta & crispy sides at Cane's Serve. Explore our menu, find your vibe match, view verified hours, and visit our cafe counter.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

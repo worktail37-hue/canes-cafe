@@ -1,0 +1,11 @@
+# ==============================================================================
+# ROBOTS.TXT FOR CANE'S COFFEE (Cafe & Bakery)
+# ==============================================================================
+# TODO-SEO: Replace 'https://www.canescoffee.example' with your verified custom domain once launched
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://www.canescoffee.example/sitemap.xml

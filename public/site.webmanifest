@@ -1,0 +1,26 @@
+{
+  "name": "Cane's Coffee - Cafe & Bakery",
+  "short_name": "Cane's Coffee",
+  "description": "Artisanal specialty coffee & fresh daily bakery in [CITY]. Single-origin micro-batch roasts & flaky viennoiseries.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E9E3DA",
+  "theme_color": "#3B332D",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

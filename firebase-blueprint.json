@@ -1,0 +1,202 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Registered customer or admin profile",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique user ID matching Firebase Auth UID"
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name"
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "User profile avatar URL"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of creation"
+        }
+      },
+      "required": ["id", "email"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer coffee and bakery order",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique order reference"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Customer Auth UID if logged in, or guest"
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Customer name"
+        },
+        "customerPhone": {
+          "type": "string",
+          "description": "Customer mobile phone"
+        },
+        "customerEmail": {
+          "type": "string",
+          "description": "Customer email"
+        },
+        "pickupTime": {
+          "type": "string",
+          "description": "Estimated pickup timing"
+        },
+        "items": {
+          "type": "array",
+          "description": "Ordered line items"
+        },
+        "total": {
+          "type": "number",
+          "description": "Total order amount"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["received", "preparing", "ready", "completed", "cancelled"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of order"
+        }
+      },
+      "required": ["id", "customerName", "customerPhone", "items", "total", "status"]
+    },
+    "Reservation": {
+      "title": "Reservation",
+      "description": "Table reservation for cafe visit",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique reservation code"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Auth UID or guest"
+        },
+        "name": {
+          "type": "string",
+          "description": "Guest name"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Mobile phone"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email"
+        },
+        "date": {
+          "type": "string",
+          "description": "Reservation date"
+        },
+        "time": {
+          "type": "string",
+          "description": "Reservation time"
+        },
+        "guests": {
+          "type": "number",
+          "description": "Party size"
+        },
+        "seating": {
+          "type": "string",
+          "description": "Preferred seating"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["confirmed", "cancelled"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of booking"
+        }
+      },
+      "required": ["id", "name", "phone", "date", "time", "guests", "status"]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "Customer contact and dietary inquiry submitted from storefront",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique inquiry reference code"
+        },
+        "name": {
+          "type": "string",
+          "description": "Customer name"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Customer mobile phone number"
+        },
+        "email": {
+          "type": "string",
+          "description": "Customer email address"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Inquiry topic or category"
+        },
+        "message": {
+          "type": "string",
+          "description": "Customer message body"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Auth UID if authenticated, or guest"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["new", "contacted", "resolved"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of inquiry creation"
+        }
+      },
+      "required": ["id", "name", "message", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "User profiles indexed by UID"
+    },
+    "/orders/{orderId}": {
+      "schema": {
+        "$ref": "#/entities/Order"
+      },
+      "description": "Placed orders"
+    },
+    "/reservations/{reservationId}": {
+      "schema": {
+        "$ref": "#/entities/Reservation"
+      },
+      "description": "Table reservations"
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": {
+        "$ref": "#/entities/Inquiry"
+      },
+      "description": "Customer inquiries and leads, strictly accessible to authorized admin"
+    }
+  }
+}

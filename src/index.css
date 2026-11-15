@@ -1,0 +1,150 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  color-scheme: light;
+  --cream: #E9E3DA;
+  --cream-light: #F4F0EA;
+  --espresso: #3B322C;
+  --espresso-deep: #2A231E;
+  --mocha: #8C7B6E;
+  --sand: #D6CCBE;
+  --text-dark: #2F2823;
+  --text-light: #F3EEE7;
+  --accent-gold: #C9A24B;
+  --card-bg: #F4F0EA;
+  --card-border: #D6CCBE;
+  --footer-bg: #2A231E;
+  --footer-border: #3B322C;
+  --footer-text: #F3EEE7;
+  --footer-muted: #8C7B6E;
+  --input-bg: #F4F0EA;
+  --input-border: #D6CCBE;
+  --input-text: #2F2823;
+}
+
+@theme {
+  --color-cream: #E9E3DA;
+  --color-cream-light: #F4F0EA;
+  --color-espresso: #3B322C;
+  --color-espresso-deep: #2A231E;
+  --color-mocha: #8C7B6E;
+  --color-sand: #D6CCBE;
+  --color-text-dark: #2F2823;
+  --color-text-light: #F3EEE7;
+  --color-accent-gold: #C9A24B;
+
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Montserrat", system-ui, -apple-system, sans-serif;
+}
+
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--cream);
+  color: var(--text-dark);
+  transition: background-color 0.25s ease, color 0.25s ease;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+h1, h2, h3, .font-serif-brand {
+  font-family: var(--font-serif);
+}
+
+/* Ticker marquee animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Subtle entrance fade-in-up animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-fade-in-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Hide scrollbar for clean horizontal carousel while keeping scroll functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom Leaflet Map styling for Cafe aesthetic */
+.custom-bean-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-bean-popup .leaflet-popup-content-wrapper {
+  background-color: #F4F0EA !important;
+  color: #3B322C !important;
+  border: 1px solid #D6CCBE !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.2) !important;
+  padding: 6px 10px !important;
+}
+
+.custom-bean-popup .leaflet-popup-tip {
+  background-color: #F4F0EA !important;
+  border: 1px solid #D6CCBE !important;
+}
+
+.leaflet-container {
+  font-family: inherit;
+}
+
