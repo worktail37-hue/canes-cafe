@@ -260,6 +260,38 @@ async function verifyOwnerToken(req: express.Request): Promise<{ authorized: boo
 }
 
 /**
+ * Identifies the caller of a NON-owner route: returns { uid, email } for a valid
+ * Firebase ID token, or null when there is no/invalid token. Never throws.
+ */
+async function getAuthUser(req: express.Request): Promise<{ uid: string; email: string } | null> {
+  const authHeader = req.headers.authorization || '';
+  if (!authHeader.startsWith('Bearer ')) return null;
+  const token = authHeader.substring(7).trim();
+  if (!token) return null;
+
+  const cached = verifiedTokenCache.get(token);
+  if (cached && cached.exp > Date.now()) {
+    return { uid: cached.uid, email: cached.email };
+  }
+
+  try {
+    const verifyUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseApiKey}`;
+    const verifyRes = await fetch(verifyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: token }),
+    });
+    if (!verifyRes.ok) return null;
+    const userData: any = await verifyRes.json();
+    const user = userData.users?.[0];
+    if (!user?.localId) return null;
+    return { uid: user.localId, email: String(user.email || '').toLowerCase() };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Strict Owner Authorization Express Middleware
  */
 async function requireOwnerAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -274,6 +306,25 @@ async function requireOwnerAuth(req: express.Request, res: express.Response, nex
   }
   (req as any).ownerEmail = result.email;
   (req as any).ownerUid = result.uid;
+  next();
+}
+
+// Simple per-IP limiter for the public video proxy routes (they spend provider credits).
+const videoHits = new Map<string, { count: number; resetAt: number }>();
+function videoRateLimiter(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const ip = ((req.headers['x-forwarded-for'] as string) || '').split(',')[0].trim() || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  const entry = videoHits.get(ip);
+  if (!entry || entry.resetAt < now) {
+    videoHits.set(ip, { count: 1, resetAt: now + 60_000 });
+    next();
+    return;
+  }
+  if (entry.count >= 20) {
+    res.status(429).json({ error: 'Too many requests. Please wait a minute and try again.' });
+    return;
+  }
+  entry.count += 1;
   next();
 }
 
@@ -671,7 +722,7 @@ app.post('/api/generate-video', async (req, res) => {
   }
 });
 
-app.post('/api/video-status', async (req, res) => {
+app.post('/api/video-status', videoRateLimiter, async (req, res) => {
   try {
     const { operationName } = req.body;
     if (!operationName) {
@@ -693,7 +744,7 @@ app.post('/api/video-status', async (req, res) => {
   }
 });
 
-app.post('/api/video-download', async (req, res) => {
+app.post('/api/video-download', videoRateLimiter, async (req, res) => {
   try {
     const { operationName } = req.body;
     if (!operationName) {
@@ -749,14 +800,34 @@ app.get('/api/orders', requireOwnerAuth, (_req, res) => {
   res.json(db.orders);
 });
 
-app.get('/api/orders/:id', (req, res) => {
+app.get('/api/orders/:id', async (req, res) => {
   const db = readDb();
   const order = db.orders.find((o) => o.id === req.params.id);
   if (!order) {
     res.status(404).json({ error: 'Order not found' });
     return;
   }
-  res.json(order);
+
+  // Order IDs are short and guessable, so a bare lookup would let anyone enumerate
+  // other customers' names/phones/emails. Allow only the owner, or a signed-in caller
+  // whose uid matches the order's userId. A guest order needs the pickup reference.
+  const ownerCheck = await verifyOwnerToken(req);
+  if (ownerCheck.authorized) {
+    res.json(order);
+    return;
+  }
+  const auth = await getAuthUser(req);
+  if (auth && order.userId && order.userId !== 'guest' && order.userId === auth.uid) {
+    res.json(order);
+    return;
+  }
+  const ref = String((req.query.ref as string) || '').trim();
+  if (ref && order.phone && ref === String(order.phone).replace(/\D/g, '').slice(-4)) {
+    res.json(order);
+    return;
+  }
+
+  res.status(403).json({ error: 'Not authorised to view this order.' });
 });
 
 app.post('/api/orders', (req, res) => {
@@ -1611,9 +1682,10 @@ app.post('/api/admin/whatsapp-test', requireOwnerAuth, async (_req, res) => {
 });
 
 // NEWSLETTER API
-app.post('/api/newsletter', (req, res) => {
-  const { email } = req.body;
-  if (!email || !email.includes('@')) {
+app.post('/api/newsletter', videoRateLimiter, (req, res) => {
+  const email = String(req.body?.email || '').trim().toLowerCase().slice(0, 254);
+  // A bare `.includes('@')` let anything through; require a real-looking address.
+  if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)) {
     res.status(400).json({ error: 'Valid email is required.' });
     return;
   }

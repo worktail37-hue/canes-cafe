@@ -116,8 +116,10 @@ service cloud.firestore {
         && !('role' in request.resource.data)
       );
 
-      // Single order lookup (e.g. for guest tracking their order or authenticated customer)
-      allow get: if true;
+      // Single order lookup: owner, or the signed-in customer who placed it.
+      // A blanket `allow get: if true` let anyone read every order by its short, guessable id
+      // (customer name, phone, email). Guests track via the server route with a pickup reference.
+      allow get: if isVerifiedOwner() || (isSignedIn() && resource.data.userId == request.auth.uid);
       // List all orders is strictly restricted to verified owner or querying user's own orders
       allow list: if isVerifiedOwner() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow update, delete: if isVerifiedOwner();
