@@ -41,8 +41,8 @@ try {
   console.warn('[Firestore] Server initialization notice:', err?.message);
 }
 
-// Authorized Owner Configuration (Strictly worktail37@gmail.com)
-const AUTHORIZED_OWNER_EMAIL = (process.env.AUTHORIZED_OWNER_EMAIL || 'worktail37@gmail.com').trim().toLowerCase();
+// Authorized Owner Configuration (set via AUTHORIZED_OWNER_EMAIL; never hardcoded in source)
+const AUTHORIZED_OWNER_EMAIL = (process.env.AUTHORIZED_OWNER_EMAIL || '').trim().toLowerCase();
 
 interface OwnerConfig {
   ownerEmail: string;

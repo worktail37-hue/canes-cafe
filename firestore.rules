@@ -15,11 +15,8 @@ service cloud.firestore {
     function isVerifiedOwner() {
       return isSignedIn()
         && request.auth.token.email_verified == true
-        && (
-          request.auth.token.email == "worktail37@gmail.com"
-          || (exists(/databases/$(database)/documents/config/owner)
-              && request.auth.uid == get(/databases/$(database)/documents/config/owner).data.uid)
-        );
+        && exists(/databases/$(database)/documents/config/owner)
+        && request.auth.uid == get(/databases/$(database)/documents/config/owner).data.uid;
     }
 
     // 3. SERVER-ONLY OWNER CONFIGURATION
